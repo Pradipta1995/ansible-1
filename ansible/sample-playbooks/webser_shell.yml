@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: "install webserver"
+    apt:
+      name: "{{ package_name }}"
+      update_cache: yes
+      state: present
+    when: ansible_os_family == "Debian"
+    notify: apache2 restart
+  - name: apache2 status
+    shell: service apache2 status >> apache_status
+    args:
+      chdir: /home/ansible
+      creates: apache_status
+    when: ansible_os_family == "Debian"
+    
+  handlers:
+   - name: apache2 restart
+     service:
+       name: apache2
+       state: restarted
+       enables: yes

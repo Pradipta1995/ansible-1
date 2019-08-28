@@ -1,0 +1,26 @@
+---
+  - hosts: all
+    become: yes
+    tasks:
+      - name: install webserver
+        package:
+          name: apache2
+          update_cache: yes
+          state: present
+        when: ansible_os_family == "Debian"
+        notify: 
+          - apache2 restart
+      - name: create a file
+        file:
+          path: /home/ansible/second_file
+          state: touch
+        when: ansible_os_family == "Debian" 
+      - name: redirect the output
+        command: cal
+        register: some
+    handlers:
+      - name: apache2 restart
+        service:
+          name: apache2
+          state: restarted
+          enables: yes

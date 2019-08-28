@@ -1,0 +1,6 @@
+---
+# vars file for tomcatroles
+tomcat: '<user username="admin" password="admin" roles="manager-gui,admin-gui"/>'
+one: '<!--'
+two: '-->'
+

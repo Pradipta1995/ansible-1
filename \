@@ -1,0 +1,14 @@
+---
+- hosts: debian
+  become: yes
+  gather_facts: no
+  vars:
+    node: 'template'
+    template file: 'node' 
+  tasks:
+    - name: template example
+      template:
+        src: file1.j2
+        dest: /home/ansible/file1.txt
+        
+  

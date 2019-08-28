@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  vars: 
+    tomcat: '<user username="admin" password="password" roles="manager-gui,admin-gui"/>'
+  tasks: 
+    - name: template for tomcat-users
+      template:
+        src: /etc/ansible/playbooks/tomcat.j2
+        dest: /opt/tomcat/conf/tomcat-users.xml
+        backup: yes     

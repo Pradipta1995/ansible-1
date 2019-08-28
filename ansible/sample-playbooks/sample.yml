@@ -1,0 +1,46 @@
+---
+  - hosts: all
+    become: yes
+    tasks:
+      - name: apache package update and install
+        apt:
+          name: "{{ ubuntu_webserver_package }}"
+          update_cache: yes
+          state: present
+        when: ansible_os_family == "Debian"
+      - name: yum package update and install
+        yum:
+          name: "{{ centos_webserver_package }}"
+          update_cache: yes
+          state: present
+        when: ansible_os_family == "RedHat"
+      - name: create an index.html page
+        copy:
+          src: ~/index.html
+          dest: /var/www/html
+          backup: yes 
+        notify:
+          -  restart the httpd service
+          -  restart the apache2 service
+      - name: package mysql installation
+        package:
+          name: "{{ item }}"
+          update_cache: yes
+          state: present
+        loop:
+          - php
+          - php-mysql
+      - name: create a file
+        file:
+          path: ~/file.txt
+          state: touch        
+    handlers: 
+      - name: restart the apache2 service
+        service:  
+          name: "{{ ubuntu_webserver_package }}" 
+          state: restarted  
+      - name: restart the httpd service
+        service:
+          name: "{{ centos_webserver_package }}"
+          state: restarted
+             

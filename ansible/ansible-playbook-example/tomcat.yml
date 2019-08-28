@@ -1,0 +1,64 @@
+---
+- hosts: tomcat
+  become: yes
+  vars:
+    tomcat: '<user username="admin" password="password" roles="manager-gui,admin-gui"/>'
+    first: '<!--'
+    second: '-->'
+  tasks:
+    - name: install java
+      apt:
+        name: default-jdk
+        state: present
+        update_cache: yes
+    - name: add the group tomcat 
+      group:
+        name: tomcat
+        state: present
+    - name: add the user tomcat
+      user:
+        name: tomcat
+        state: present
+        group: tomcat
+        shell: /bin/false
+        home: /opt/tomcat
+    - name: create a directory
+      file:
+        path: /opt/tomcat
+        state: directory
+    - name: unarchive the tomcat file
+      unarchive:
+        src: https://www.apache.org/dist/tomcat/tomcat-8/v8.5.43/bin/apache-tomcat-8.5.43.tar.gz
+        dest: /opt/tomcat/
+        extra_opts: [--strip-components=1]
+        remote_src: yes
+    - name: update the permissions
+      script: permissions.sh
+    - name: create a tomcat.service
+      copy:
+        src: /etc/systemd/system/tomcat.service
+        dest: /etc/systemd/system/tomcat.service
+    - name: restart the tomcat service
+      command: "{{ item }}"
+      loop:
+        - systemctl daemon-reload
+        - systemctl start tomcat
+        - systemctl status tomcat
+        - systemctl enable tomcat
+    - name: template for tomcat-users
+      template:
+        src: /etc/ansible/playbooks/tomcat.j2
+        dest: /opt/tomcat/conf/tomcat-users.xml
+        backup: yes
+    - name: template for restric the ips
+      template:
+        src: /etc/ansible/playbooks/context.j2
+        dest: /opt/tomcat/webapps/host-manager/META-INF/context.xml 
+  handlers:
+    - name: servie tomcat restart
+      service: 
+        name: tomcat
+        state: restarted
+
+   
+            

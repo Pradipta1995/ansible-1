@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become_user: yes
+  tasks:
+    - name: install git 
+      package:
+        name: git
+        state: present
+    - debug:
+        msg: package git is installed in {{ ansible_hostname }}
+    - fail:
+        msg: git is not installed on redhat linux
+      when: ansible_os_family == "Redhat"
+    - name: include a playbook
+      include_tasks: webser_cmd.yml 

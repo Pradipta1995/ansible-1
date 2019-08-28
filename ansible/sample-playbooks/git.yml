@@ -1,0 +1,11 @@
+
+---
+  - hosts: tomcat
+    become: yes
+    tasks:
+      - name: install epel
+        yum_repository:
+          name: epel-realease
+          description: install epel and enable epel
+          baseurl: http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+        when: ansible_os_family== "RedHat"

@@ -1,0 +1,63 @@
+---
+# tasks file for tomcatroles
+- name: install java
+  apt:
+    name: default-jdk
+    state: present
+    update_cache: yes
+- name: add the user tomcat
+  user:
+    name: tomcat
+    state: present
+    group: tomcat
+    shell: /bin/false
+    home: /opt/tomcat
+- name: create a directory
+  file:
+    path: /opt/tomcat
+    state: directory
+- name: unarchive the tomcat file
+  unarchive:
+    src: https://www.apache.org/dist/tomcat/tomcat-8/v8.5.43/bin/apache-tomcat-8.5.43.tar.gz
+    dest: /opt/tomcat/
+    extra_opts: [--strip-components=1]
+    remote_src: yes
+- name: update the permissions
+  script: permissions.sh
+- name: create a tomcat.service
+  copy:
+    src: tomcatroles/files/tomcat.service
+    dest: /etc/systemd/system/tomcat.service
+- name: deploy the jenkins.war file
+  copy:
+    src: tomcatroles/files/jenkins.war
+    dest: /opt/tomcat/webapps/
+- name: restart the tomcat service
+  command: "{{ item }}"
+  loop:
+    - systemctl daemon-reload
+    - systemctl start tomcat
+    - systemctl status tomcat
+    - systemctl enable tomcat
+- name: template for tomcat-users
+  template:
+    src: tomcatroles/templates/tomcat.j2
+    dest: /opt/tomcat/conf/tomcat-users.xml
+    backup: yes
+  notify: 
+    - service tomcat restart
+- name: template for restric the ips for managerhost
+  template:
+    src: tomcatroles/templates/context.xml.j2
+    dest: /opt/tomcat/webapps/manager/META-INF/context.xml
+    backup: yes
+  notify: 
+    - service tomcat restart
+- name: template for restric the ips for hostmanager
+  template:
+    src: tomcatroles/templates/context.xml.j2
+    dest: /opt/tomcat/webapps/host-manager/META-INF/context.xml
+    backup: yes
+  notify:
+    - service tomcat restart
+
